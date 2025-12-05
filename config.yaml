@@ -1,0 +1,87 @@
+# SIEM Configuration File
+# ========================
+# Define rules, thresholds, and detection parameters.
+
+detection:
+  # Statistical anomaly detection
+  statistical:
+    method: zscore              # Options: zscore, iqr
+    zscore_threshold: 3.0       # Standard deviations
+    window_minutes: 5           # Time aggregation window
+    enabled: true
+
+  # Machine learning anomaly detection
+  ml:
+    enabled: true
+    contamination: 0.05         # Proportion of expected anomalies
+    features:
+      - event_count
+      - hour_of_day
+      - day_of_week
+
+  # Rule-based detection
+  rules:
+    enabled: true
+    
+    brute_force:
+      enabled: true
+      failed_login_threshold: 10      # Failed logins per time window
+      failed_login_window: 5          # Minutes
+      severity: CRITICAL
+    
+    port_scan:
+      enabled: true
+      unique_ports_threshold: 50
+      severity: HIGH
+    
+    http_errors:
+      enabled: true
+      error_spike_threshold: 50
+      window_minutes: 5
+      severity: WARNING
+
+alerting:
+  # Alert deduplication
+  dedup_window_seconds: 300    # Ignore similar alerts within this window
+  
+  # Severity thresholds
+  min_severity_to_report: WARNING  # Only report WARNING and above
+  
+  # Output formats
+  output_formats:
+    - text      # Human-readable console output
+    - json      # JSON file
+    - csv       # CSV file for analysis
+  
+  # Alert destinations
+  destinations:
+    console: true
+    file: siem_alerts.json
+    email: false
+    email_recipients:
+      - security@example.com
+    slack: false
+    slack_webhook: https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+
+log_sources:
+  # Define log files and their types
+  apache:
+    enabled: true
+    path: sample_logs/apache_access.log
+    type: apache
+  
+  ssh:
+    enabled: true
+    path: sample_logs/ssh_auth.log
+    type: ssh
+  
+  windows:
+    enabled: false
+    path: sample_logs/windows_events.log
+    type: windows
+
+retention:
+  # Data retention policies
+  raw_logs_days: 30
+  alerts_days: 90
+  reports_days: 365
